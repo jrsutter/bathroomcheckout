@@ -5,32 +5,56 @@
   <style>
     body {
       font-family: sans-serif;
-      max-width: 500px;
-      margin: auto;
-      padding: 20px;
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #f0f0f0;
       transition: background-color 0.3s ease;
     }
+
+    .container {
+      text-align: center;
+      padding: 20px;
+      background-color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      width: 300px;
+    }
+
     input, button {
       padding: 10px;
       font-size: 16px;
       margin: 5px 0;
       width: 100%;
+      border-radius: 5px;
+      border: 1px solid #ddd;
     }
+
     .status-message {
       font-weight: bold;
       font-size: 18px;
     }
+
+    #message {
+      margin-top: 10px;
+      color: red;
+    }
   </style>
 </head>
-<body id="appBody">
-  <h1>Student Checkout</h1>
+<body>
+  <div class="container">
+    <h1>Student Checkout</h1>
 
-  <input id="studentIdInput" placeholder="Enter 6-digit Student ID" maxlength="6" />
-  <button onclick="checkOut()">Check Out</button>
-  <button onclick="checkIn()">Check In</button>
+    <input id="studentIdInput" placeholder="Enter 6-digit Student ID" maxlength="6" />
+    <button onclick="checkOut()">Check Out</button>
+    <button onclick="checkIn()">Check In</button>
 
-  <p id="status" class="status-message"></p>
-  <p id="message"></p>
+    <p id="status" class="status-message"></p>
+    <p id="message"></p>
+  </div>
 
   <script>
     let checkedOutID = localStorage.getItem('checkedOutID') || null;
@@ -39,7 +63,7 @@
     let timerInterval;
 
     function updateUI() {
-      const body = document.getElementById('appBody');
+      const body = document.body;
       const status = document.getElementById('status');
 
       clearInterval(timerInterval);
