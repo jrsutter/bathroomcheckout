@@ -16,9 +16,10 @@
       margin: 5px 0;
       width: 100%;
     }
-    .log { margin-top: 20px; }
-    .log-entry { margin-bottom: 5px; }
-    .status-message { font-weight: bold; }
+    .status-message {
+      font-weight: bold;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body id="appBody">
@@ -31,35 +32,34 @@
   <p id="status" class="status-message"></p>
   <p id="message"></p>
 
-  <div class="log">
-    <h3>Log History</h3>
-    <div id="logContainer"></div>
-  </div>
-
   <script>
     let checkedOutID = localStorage.getItem('checkedOutID') || null;
     let checkOutTimestamp = localStorage.getItem('checkOutTimestamp') || null;
     let log = JSON.parse(localStorage.getItem('log')) || [];
+    let timerInterval;
 
     function updateUI() {
       const body = document.getElementById('appBody');
       const status = document.getElementById('status');
+
+      clearInterval(timerInterval);
+
       if (checkedOutID) {
         body.style.backgroundColor = '#ffdddd'; // red
-        status.textContent = `Checked Out: ${checkedOutID}`;
         status.style.color = 'red';
+
+        const startTime = parseInt(checkOutTimestamp);
+        timerInterval = setInterval(() => {
+          const elapsed = Date.now() - startTime;
+          const mins = Math.floor(elapsed / 60000);
+          const secs = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
+          status.textContent = `Checked Out: ${checkedOutID} (Elapsed: ${mins}:${secs})`;
+        }, 1000);
       } else {
         body.style.backgroundColor = '#ddffdd'; // green
-        status.textContent = 'No one is currently checked out';
         status.style.color = 'green';
+        status.textContent = 'No one is currently checked out';
       }
-
-      const logContainer = document.getElementById('logContainer');
-      logContainer.innerHTML = log.map(entry => {
-        const time = new Date(entry.timestamp).toLocaleString();
-        const duration = entry.duration ? ` (Duration: ${entry.duration})` : '';
-        return `<div class="log-entry">${entry.studentID} ${entry.action} @ ${time}${duration}</div>`;
-      }).reverse().join('');
     }
 
     function isValidID(id) {
