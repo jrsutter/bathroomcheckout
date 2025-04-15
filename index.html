@@ -28,9 +28,15 @@
       padding: 10px;
       font-size: 16px;
       margin: 5px 0;
-      width: 100%; /* Ensures they take up full width of the container */
+      width: 100%;
+      max-width: 100%; /* Keeps the width from growing too large */
       border-radius: 5px;
       border: 1px solid #ddd;
+    }
+
+    input {
+      width: 80%; /* Adjust this to the desired width of the ID box */
+      margin: 5px 0;
     }
 
     .status-message {
