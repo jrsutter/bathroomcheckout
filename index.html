@@ -29,14 +29,13 @@
       font-size: 16px;
       margin: 5px 0;
       width: 100%;
-      max-width: 100%; /* Keeps the width from growing too large */
+      max-width: 100%;
       border-radius: 5px;
       border: 1px solid #ddd;
     }
 
     input {
-      width: 80%; /* Adjust this to the desired width of the ID box */
-      margin: 5px 0;
+      width: 80%;
     }
 
     .status-message {
@@ -49,11 +48,28 @@
       color: red;
     }
 
-    #admin-buttons {
-      display: none;
-      margin-top: 10px;
+    /* Style for the new bottom-left and bottom-right buttons */
+    #downloadButton, #clearLogButton {
+      position: fixed;
+      padding: 10px;
+      font-size: 16px;
+      width: 120px;
+      margin: 10px;
+      bottom: 10px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
     }
 
+    #downloadButton {
+      left: 10px;
+    }
+
+    #clearLogButton {
+      right: 10px;
+    }
   </style>
 </head>
 <body>
@@ -66,13 +82,11 @@
 
     <p id="status" class="status-message"></p>
     <p id="message"></p>
-
-    <!-- Admin buttons hidden by default -->
-    <div id="admin-buttons">
-      <button onclick="downloadLog()">Download Log</button>
-      <button onclick="downloadAndClearLog()">Download and Clear Log</button>
-    </div>
   </div>
+
+  <!-- Buttons to download CSV and clear log -->
+  <button id="downloadButton" onclick="confirmDownloadLog()">Download Log</button>
+  <button id="clearLogButton" onclick="confirmClearLog()">Clear Log</button>
 
   <script>
     let checkedOutID = localStorage.getItem('checkedOutID') || null;
@@ -113,7 +127,6 @@
       document.getElementById('studentIdInput').value = "";
 
       if (id === "159357") {
-        showAdminButtons();
         return;
       }
 
@@ -174,10 +187,29 @@
       document.getElementById('message').textContent = msg;
     }
 
-    function showAdminButtons() {
-      document.getElementById('admin-buttons').style.display = 'block';
+    // Confirm before download
+    function confirmDownloadLog() {
+      const userInput = prompt("Please enter the admin ID (159357) to download the log:");
+
+      if (userInput === "159357") {
+        downloadLog();
+      } else {
+        alert("Incorrect ID. You cannot download the log.");
+      }
     }
 
+    // Confirm before clearing the log
+    function confirmClearLog() {
+      const userInput = prompt("Please enter the admin ID (159357) to clear the log:");
+
+      if (userInput === "159357") {
+        clearLog();
+      } else {
+        alert("Incorrect ID. You cannot clear the log.");
+      }
+    }
+
+    // Download the log as CSV
     function downloadLog() {
       const csv = log.map(entry => {
         const time = new Date(entry.timestamp).toISOString();
@@ -194,12 +226,11 @@
       URL.revokeObjectURL(url);
     }
 
-    function downloadAndClearLog() {
-      downloadLog();
+    // Clear the log
+    function clearLog() {
       log = [];
       localStorage.setItem('log', JSON.stringify(log));
-      showMessage("Log cleared after download.");
-      document.getElementById('admin-buttons').style.display = 'none';
+      showMessage("Log has been cleared.");
     }
 
     updateUI();
