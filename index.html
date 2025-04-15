@@ -48,6 +48,12 @@
       margin-top: 10px;
       color: red;
     }
+
+    #admin-buttons {
+      display: none;
+      margin-top: 10px;
+    }
+
   </style>
 </head>
 <body>
@@ -60,6 +66,12 @@
 
     <p id="status" class="status-message"></p>
     <p id="message"></p>
+
+    <!-- Admin buttons hidden by default -->
+    <div id="admin-buttons">
+      <button onclick="downloadLog()">Download Log</button>
+      <button onclick="downloadAndClearLog()">Download and Clear Log</button>
+    </div>
   </div>
 
   <script>
@@ -101,8 +113,7 @@
       document.getElementById('studentIdInput').value = "";
 
       if (id === "159357") {
-        downloadLog();
-        showMessage("Log downloaded.");
+        showAdminButtons();
         return;
       }
 
@@ -163,6 +174,10 @@
       document.getElementById('message').textContent = msg;
     }
 
+    function showAdminButtons() {
+      document.getElementById('admin-buttons').style.display = 'block';
+    }
+
     function downloadLog() {
       const csv = log.map(entry => {
         const time = new Date(entry.timestamp).toISOString();
@@ -177,6 +192,14 @@
       a.download = 'student_log.csv';
       a.click();
       URL.revokeObjectURL(url);
+    }
+
+    function downloadAndClearLog() {
+      downloadLog();
+      log = [];
+      localStorage.setItem('log', JSON.stringify(log));
+      showMessage("Log cleared after download.");
+      document.getElementById('admin-buttons').style.display = 'none';
     }
 
     updateUI();
