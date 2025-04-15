@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Checkout</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      transition: background-color 0.3s ease;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 5px 0;
+      width: 100%;
+    }
+    .log { margin-top: 20px; }
+    .log-entry { margin-bottom: 5px; }
+    .status-message { font-weight: bold; }
+  </style>
+</head>
+<body id="appBody">
+  <h1>Student Checkout</h1>
+
+  <input id="studentIdInput" placeholder="Enter 6-digit Student ID" maxlength="6" />
+  <button onclick="checkOut()">Check Out</button>
+  <button onclick="checkIn()">Check In</button>
+
+  <p id="status" class="status-message"></p>
+  <p id="message"></p>
+
+  <div class="log">
+    <h3>Log History</h3>
+    <div id="logContainer"></div>
+  </div>
+
+  <script>
+    let checkedOutID = localStorage.getItem('checkedOutID') || null;
+    let checkOutTimestamp = localStorage.getItem('checkOutTimestamp') || null;
+    let log = JSON.parse(localStorage.getItem('log')) || [];
+
+    function updateUI() {
+      const body = document.getElementById('appBody');
+      const status = document.getElementById('status');
+      if (checkedOutID) {
+        body.style.backgroundColor = '#ffdddd'; // red
+        status.textContent = `Checked Out: ${checkedOutID}`;
+        status.style.color = 'red';
+      } else {
+        body.style.backgroundColor = '#ddffdd'; // green
+        status.textContent = 'No one is currently checked out';
+        status.style.color = 'green';
+      }
+
+      const logContainer = document.getElementById('logContainer');
+      logContainer.innerHTML = log.map(entry => {
+        const time = new Date(entry.timestamp).toLocaleString();
+        const duration = entry.duration ? ` (Duration: ${entry.duration})` : '';
+        return `<div class="log-entry">${entry.studentID} ${entry.action} @ ${time}${duration}</div>`;
+      }).reverse().join('');
+    }
+
+    function isValidID(id) {
+      return /^\d{6}$/.test(id);
+    }
+
+    function checkOut() {
+      const id = document.getElementById('studentIdInput').value.trim();
+      document.getElementById('studentIdInput').value = "";
+
+      if (id === "159357") {
+        downloadLog();
+        showMessage("Log downloaded.");
+        return;
+      }
+
+      if (!isValidID(id)) {
+        showMessage("Invalid ID. Must be exactly 6 digits.");
+        return;
+      }
+
+      if (checkedOutID) {
+        if (checkedOutID === id) {
+          showMessage("You're already checked out.");
+        } else {
+          showMessage("Another student is currently checked out.");
+        }
+        return;
+      }
+
+      checkedOutID = id;
+      checkOutTimestamp = Date.now();
+      localStorage.setItem('checkedOutID', id);
+      localStorage.setItem('checkOutTimestamp', checkOutTimestamp);
+      log.push({ studentID: id, action: "checked out", timestamp: checkOutTimestamp });
+      localStorage.setItem('log', JSON.stringify(log));
+      showMessage("Checked out successfully.");
+      updateUI();
+    }
+
+    function checkIn() {
+      const id = document.getElementById('studentIdInput').value.trim();
+      document.getElementById('studentIdInput').value = "";
+
+      if (!isValidID(id)) {
+        showMessage("Invalid ID. Must be exactly 6 digits.");
+        return;
+      }
+
+      if (checkedOutID !== id) {
+        showMessage("Only the student who checked out can check in.");
+        return;
+      }
+
+      const checkInTimestamp = Date.now();
+      const durationMs = checkInTimestamp - parseInt(checkOutTimestamp);
+      const durationMin = Math.floor(durationMs / 60000);
+      const durationFormatted = `${durationMin} min`;
+
+      checkedOutID = null;
+      checkOutTimestamp = null;
+      localStorage.removeItem('checkedOutID');
+      localStorage.removeItem('checkOutTimestamp');
+      log.push({ studentID: id, action: "checked in", timestamp: checkInTimestamp, duration: durationFormatted });
+      localStorage.setItem('log', JSON.stringify(log));
+      showMessage("Checked in successfully.");
+      updateUI();
+    }
+
+    function showMessage(msg) {
+      document.getElementById('message').textContent = msg;
+    }
+
+    function downloadLog() {
+      const csv = log.map(entry => {
+        const time = new Date(entry.timestamp).toISOString();
+        const duration = entry.duration || "";
+        return `${entry.studentID},${entry.action},${time},${duration}`;
+      }).join("\n");
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'student_log.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
