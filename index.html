@@ -1,137 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Student Checkout</title>
+  <meta charset="UTF-8">
+  <title>Student Checkout App</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
+      color: white;
+      text-align: center;
+      transition: background-color 0.5s;
       margin: 0;
-      padding: 0;
       height: 100vh;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      background-color: #f0f0f0;
-      transition: background-color 0.3s ease;
     }
-
-    .container {
-      text-align: center;
-      padding: 20px;
-      background-color: white;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      width: 300px;
-    }
-
     input, button {
+      font-size: 1.2rem;
       padding: 10px;
-      font-size: 16px;
-      margin: 5px 0;
-      width: 100%;
-      max-width: 100%;
-      border-radius: 5px;
-      border: 1px solid #ddd;
-    }
-
-    input {
-      width: 80%;
-    }
-
-    .status-message {
-      font-weight: bold;
-      font-size: 18px;
-    }
-
-    #message {
-      margin-top: 10px;
-      color: red;
-    }
-
-    /* Style for the new bottom-left and bottom-right buttons */
-    #downloadButton, #clearLogButton {
-      position: fixed;
-      padding: 10px;
-      font-size: 16px;
-      width: 120px;
       margin: 10px;
-      bottom: 10px;
+      border: none;
       border-radius: 5px;
-      border: 1px solid #ddd;
-      background-color: #007BFF;
+    }
+    #studentIdInput {
+      width: 200px;
+      text-align: center;
+    }
+    #status, #timer {
+      margin-top: 20px;
+      font-size: 1.5rem;
+    }
+    .admin-button {
+      display: none;
+      position: fixed;
+      bottom: 10px;
+      padding: 10px 20px;
+      background-color: #333;
       color: white;
+      border-radius: 5px;
       cursor: pointer;
     }
-
     #downloadButton {
       left: 10px;
     }
-
     #clearLogButton {
       right: 10px;
+    }
+    #historyButton {
+      left: 50%;
+      transform: translateX(-50%);
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Student Checkout</h1>
 
-    <input id="studentIdInput" placeholder="Enter 6-digit Student ID" maxlength="6" />
+  <h2>Student Checkout</h2>
+  <input type="text" id="studentIdInput" placeholder="Enter Student ID" maxlength="6">
+  <div>
     <button onclick="checkOut()">Check Out</button>
     <button onclick="checkIn()">Check In</button>
-
-    <p id="status" class="status-message"></p>
-    <p id="message"></p>
   </div>
 
-  <!-- Buttons to download CSV and clear log -->
-  <button id="downloadButton" onclick="confirmDownloadLog()">Download Log</button>
-  <button id="clearLogButton" onclick="confirmClearLog()">Clear Log</button>
+  <div id="status"></div>
+  <div id="timer"></div>
+
+  <button id="downloadButton" class="admin-button" onclick="downloadCSV()">Download Log</button>
+  <button id="clearLogButton" class="admin-button" onclick="clearLog()">Clear Log</button>
+  <button id="historyButton" class="admin-button" onclick="downloadStudentHistory()">Student History</button>
 
   <script>
-    let checkedOutID = localStorage.getItem('checkedOutID') || null;
-    let checkOutTimestamp = localStorage.getItem('checkOutTimestamp') || null;
-    let log = JSON.parse(localStorage.getItem('log')) || [];
-    let timerInterval;
+    let checkedOutID = localStorage.getItem('checkedOutID') || "";
+    let checkOutTimestamp = localStorage.getItem('checkOutTimestamp');
+    let log = JSON.parse(localStorage.getItem('log') || "[]");
+    let timerInterval = null;
+    let adminMode = false;
+
+    function isValidID(id) {
+      return /^\d{6}$/.test(id);
+    }
+
+    function showMessage(msg) {
+      document.getElementById('status').textContent = msg;
+    }
 
     function updateUI() {
       const body = document.body;
       const status = document.getElementById('status');
-
+      const timer = document.getElementById('timer');
       clearInterval(timerInterval);
 
       if (checkedOutID) {
-        body.style.backgroundColor = '#ffdddd'; // red
-        status.style.color = 'red';
-
-        const startTime = parseInt(checkOutTimestamp);
-        timerInterval = setInterval(() => {
-          const elapsed = Date.now() - startTime;
-          const mins = Math.floor(elapsed / 60000);
-          const secs = Math.floor((elapsed % 60000) / 1000).toString().padStart(2, '0');
-          status.textContent = `Checked Out: ${checkedOutID} (Elapsed: ${mins}:${secs})`;
-        }, 1000);
+        body.style.backgroundColor = '#B22222'; // darker red
+        status.textContent = `Student ${checkedOutID} is checked out.`;
+        updateTimer();
+        timerInterval = setInterval(updateTimer, 1000);
       } else {
-        body.style.backgroundColor = '#ddffdd'; // green
-        status.style.color = 'green';
-        status.textContent = 'No one is currently checked out';
+        body.style.backgroundColor = '#228B22'; // darker green
+        status.textContent = "No student is currently checked out.";
+        timer.textContent = "";
       }
     }
 
-    function isValidID(id) {
-      return /^\d{6}$/.test(id);
+    function updateTimer() {
+      const timer = document.getElementById('timer');
+      const elapsed = Date.now() - parseInt(checkOutTimestamp);
+      const minutes = Math.floor(elapsed / 60000);
+      const seconds = Math.floor((elapsed % 60000) / 1000);
+      timer.textContent = `Elapsed time: ${minutes}m ${seconds}s`;
     }
 
     function checkOut() {
       const id = document.getElementById('studentIdInput').value.trim();
       document.getElementById('studentIdInput').value = "";
 
-      if (id === "159357") {
+      if (!isValidID(id)) {
+        showMessage("Invalid ID. Must be exactly 6 digits.");
         return;
       }
 
-      if (!isValidID(id)) {
-        showMessage("Invalid ID. Must be exactly 6 digits.");
+      if (id === "159357" && !adminMode) {
+        adminMode = true;
+        document.getElementById('downloadButton').style.display = "block";
+        document.getElementById('clearLogButton').style.display = "block";
+        document.getElementById('historyButton').style.display = "block";
+        showMessage("Admin mode activated.");
         return;
       }
 
@@ -163,54 +156,30 @@
         return;
       }
 
-      if (checkedOutID !== id) {
-        showMessage("Only the student who checked out can check in.");
+      if (!checkedOutID || checkedOutID !== id) {
+        showMessage("No matching student is currently checked out.");
         return;
       }
 
-      const checkInTimestamp = Date.now();
-      const durationMs = checkInTimestamp - parseInt(checkOutTimestamp);
-      const durationMin = Math.floor(durationMs / 60000);
-      const durationFormatted = `${durationMin} min`;
+      const now = Date.now();
+      const duration = now - parseInt(checkOutTimestamp);
+      log.push({
+        studentID: id,
+        action: "checked in",
+        timestamp: now,
+        duration: `${Math.floor(duration / 60000)}m ${Math.floor((duration % 60000) / 1000)}s`
+      });
+      localStorage.setItem('log', JSON.stringify(log));
 
-      checkedOutID = null;
+      checkedOutID = "";
       checkOutTimestamp = null;
       localStorage.removeItem('checkedOutID');
       localStorage.removeItem('checkOutTimestamp');
-      log.push({ studentID: id, action: "checked in", timestamp: checkInTimestamp, duration: durationFormatted });
-      localStorage.setItem('log', JSON.stringify(log));
       showMessage("Checked in successfully.");
       updateUI();
     }
 
-    function showMessage(msg) {
-      document.getElementById('message').textContent = msg;
-    }
-
-    // Confirm before download
-    function confirmDownloadLog() {
-      const userInput = prompt("Please enter the admin ID to download the log:");
-
-      if (userInput === "159357") {
-        downloadLog();
-      } else {
-        alert("Incorrect ID. You cannot download the log.");
-      }
-    }
-
-    // Confirm before clearing the log
-    function confirmClearLog() {
-      const userInput = prompt("Please enter the admin ID to clear the log:");
-
-      if (userInput === "159357") {
-        clearLog();
-      } else {
-        alert("Incorrect ID. You cannot clear the log.");
-      }
-    }
-
-    // Download the log as CSV
-    function downloadLog() {
+    function downloadCSV() {
       const csv = log.map(entry => {
         const time = new Date(entry.timestamp).toISOString();
         const duration = entry.duration || "";
@@ -221,16 +190,44 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'student_log.csv';
+      a.download = "checkout_log.csv";
       a.click();
       URL.revokeObjectURL(url);
     }
 
-    // Clear the log
     function clearLog() {
+      if (!confirm("Are you sure you want to clear the log?")) return;
       log = [];
       localStorage.setItem('log', JSON.stringify(log));
-      showMessage("Log has been cleared.");
+      alert("Log cleared.");
+    }
+
+    function downloadStudentHistory() {
+      const studentID = prompt("Enter the 6-digit student ID to download their history:");
+      if (!isValidID(studentID)) {
+        alert("Invalid ID. Must be exactly 6 digits.");
+        return;
+      }
+
+      const studentEntries = log.filter(entry => entry.studentID === studentID);
+      if (studentEntries.length === 0) {
+        alert("No history found for this ID.");
+        return;
+      }
+
+      const csv = studentEntries.map(entry => {
+        const time = new Date(entry.timestamp).toISOString();
+        const duration = entry.duration || "";
+        return `${entry.studentID},${entry.action},${time},${duration}`;
+      }).join("\n");
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `history_${studentID}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
     updateUI();
