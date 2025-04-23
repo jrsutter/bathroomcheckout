@@ -101,7 +101,7 @@
       clearInterval(timerInterval);
 
       if (checkedOutID) {
-        body.style.backgroundColor = '#ffdddd'; // red
+        body.style.backgroundColor = '#006400'; // red
         status.style.color = 'red';
 
         const startTime = parseInt(checkOutTimestamp);
@@ -112,7 +112,7 @@
           status.textContent = `Checked Out: ${checkedOutID} (Elapsed: ${mins}:${secs})`;
         }, 1000);
       } else {
-        body.style.backgroundColor = '#ddffdd'; // green
+        body.style.backgroundColor = '#8B0000'; // green
         status.style.color = 'green';
         status.textContent = 'No one is currently checked out';
       }
