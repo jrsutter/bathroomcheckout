@@ -41,13 +41,11 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    #downloadButton {
-      left: 10px;
-    }
-    #clearLogButton {
-      right: 10px;
-    }
-    #historyButton {
+    #downloadButton { left: 10px; }
+    #clearLogButton { right: 10px; }
+    #historyButton { left: 50%; transform: translateX(-50%); }
+    #exitAdminButton {
+      bottom: 60px;
       left: 50%;
       transform: translateX(-50%);
     }
@@ -68,6 +66,7 @@
   <button id="downloadButton" class="admin-button" onclick="downloadCSV()">Download Log</button>
   <button id="clearLogButton" class="admin-button" onclick="clearLog()">Clear Log</button>
   <button id="historyButton" class="admin-button" onclick="downloadStudentHistory()">Student History</button>
+  <button id="exitAdminButton" class="admin-button" onclick="exitAdmin()">Exit Admin Mode</button>
 
   <script>
     let checkedOutID = localStorage.getItem('checkedOutID') || "";
@@ -120,10 +119,7 @@
       }
 
       if (id === "159357" && !adminMode) {
-        adminMode = true;
-        document.getElementById('downloadButton').style.display = "block";
-        document.getElementById('clearLogButton').style.display = "block";
-        document.getElementById('historyButton').style.display = "block";
+        enableAdminMode();
         showMessage("Admin mode activated.");
         return;
       }
@@ -230,10 +226,28 @@
       URL.revokeObjectURL(url);
     }
 
-    // Ensure admin buttons are hidden on load
+    function enableAdminMode() {
+      adminMode = true;
+      document.getElementById('downloadButton').style.display = "block";
+      document.getElementById('clearLogButton').style.display = "block";
+      document.getElementById('historyButton').style.display = "block";
+      document.getElementById('exitAdminButton').style.display = "block";
+    }
+
+    function exitAdmin() {
+      adminMode = false;
+      document.getElementById('downloadButton').style.display = "none";
+      document.getElementById('clearLogButton').style.display = "none";
+      document.getElementById('historyButton').style.display = "none";
+      document.getElementById('exitAdminButton').style.display = "none";
+      showMessage("Admin mode deactivated.");
+    }
+
+    // Hide admin buttons on load
     document.getElementById('downloadButton').style.display = "none";
     document.getElementById('clearLogButton').style.display = "none";
     document.getElementById('historyButton').style.display = "none";
+    document.getElementById('exitAdminButton').style.display = "none";
 
     updateUI();
   </script>
