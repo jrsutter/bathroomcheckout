@@ -230,6 +230,11 @@
       URL.revokeObjectURL(url);
     }
 
+    // Ensure admin buttons are hidden on load
+    document.getElementById('downloadButton').style.display = "none";
+    document.getElementById('clearLogButton').style.display = "none";
+    document.getElementById('historyButton').style.display = "none";
+
     updateUI();
   </script>
 </body>
