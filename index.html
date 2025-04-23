@@ -27,8 +27,13 @@
       width: 200px;
       text-align: center;
     }
-    #status, #timer {
+    #status {
       margin-top: 20px;
+      font-size: 1.5rem;
+      opacity: 1;
+      transition: opacity 1s ease;
+    }
+    #timer {
       font-size: 1.5rem;
     }
     .admin-button {
@@ -54,6 +59,7 @@
 <body>
 
   <h2>Student Checkout</h2>
+  <label for="studentIdInput" style="font-size: 1.2rem;">Student ID:</label><br>
   <input type="text" id="studentIdInput" placeholder="Enter Student ID" maxlength="6">
   <div>
     <button onclick="checkOut()">Check Out</button>
@@ -80,7 +86,15 @@
     }
 
     function showMessage(msg) {
-      document.getElementById('status').textContent = msg;
+      const status = document.getElementById('status');
+      status.textContent = msg;
+      status.style.opacity = 1; // Reset fade
+    }
+
+    function fadeOutMessage(delay = 10000) {
+      setTimeout(() => {
+        document.getElementById('status').style.opacity = 0;
+      }, delay);
     }
 
     function updateUI() {
@@ -118,7 +132,7 @@
         return;
       }
 
-      if (id === "159357" && !adminMode) { 
+      if (id === "159357" && !adminMode) {
         enableAdminMode();
         showMessage("Admin mode activated.");
         return;
@@ -241,14 +255,10 @@
       document.getElementById('historyButton').style.display = "none";
       document.getElementById('exitAdminButton').style.display = "none";
       showMessage("Admin mode deactivated.");
+      fadeOutMessage(); // fade out after 10s
     }
 
-    // Hide admin buttons on load
-    document.getElementById('downloadButton').style.display = "none";
-    document.getElementById('clearLogButton').style.display = "none";
-    document.getElementById('historyButton').style.display = "none";
-    document.getElementById('exitAdminButton').style.display = "none";
-
+    // Initial UI setup
     updateUI();
   </script>
 </body>
