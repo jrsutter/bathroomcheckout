@@ -3,54 +3,83 @@
 <head>
   <meta charset="UTF-8">
   <title>Student Checkout App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #228B22;
+      overflow: hidden;
+    }
+
     body {
       font-family: Arial, sans-serif;
       color: white;
       text-align: center;
-      transition: background-color 0.5s;
-      margin: 0;
-      height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
     }
-    input, button {
-      font-size: 1.2rem;
-      padding: 10px;
-      margin: 10px;
-      border: none;
-      border-radius: 5px;
+
+    h2 {
+      font-size: 6vw;
+      margin-bottom: 2vh;
     }
+
+    label {
+      font-size: 4vw;
+    }
+
+    input, button {
+      font-size: 4vw;
+      padding: 1vh 2vw;
+      margin: 2vh 2vw;
+      border: none;
+      border-radius: 1vw;
+    }
+
     #studentIdInput {
-      width: 200px;
+      width: 40vw;
       text-align: center;
     }
+
     #status {
-      margin-top: 20px;
-      font-size: 1.5rem;
+      margin-top: 4vh;
+      font-size: 4.5vw;
       opacity: 1;
       transition: opacity 1s ease;
     }
+
     #timer {
-      font-size: 1.5rem;
+      font-size: 4vw;
+      margin-top: 2vh;
     }
+
     .admin-button {
       display: none;
       position: fixed;
-      bottom: 10px;
-      padding: 10px 20px;
+      bottom: 2vh;
+      padding: 2vh 3vw;
       background-color: #333;
       color: white;
-      border-radius: 5px;
+      border-radius: 1vw;
       cursor: pointer;
+      font-size: 3vw;
+      z-index: 10;
     }
-    #downloadButton { left: 10px; }
-    #clearLogButton { right: 10px; }
+
+    #downloadButton { left: 2vw; }
+    #clearLogButton { right: 2vw; }
     #historyButton { left: 50%; transform: translateX(-50%); }
     #exitAdminButton {
-      bottom: 60px;
+      bottom: 12vh;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    #fullscreenToggle {
+      bottom: 22vh;
       left: 50%;
       transform: translateX(-50%);
     }
@@ -59,12 +88,12 @@
 <body>
 
   <h2>Student Checkout</h2>
-  
+
   <div style="text-align: left; display: inline-block;">
-    <label for="studentIdInput" style="font-size: 1.2rem;">Student ID:</label><br>
+    <label for="studentIdInput">Student ID:</label><br>
     <input type="text" id="studentIdInput" placeholder="Enter Student ID" maxlength="6">
   </div>
-  
+
   <div>
     <button onclick="checkOut()">Check Out</button>
     <button onclick="checkIn()">Check In</button>
@@ -73,19 +102,21 @@
   <div id="status"></div>
   <div id="timer"></div>
 
+  <!-- Admin Buttons -->
   <button id="downloadButton" class="admin-button" onclick="downloadCSV()">Download Log</button>
   <button id="clearLogButton" class="admin-button" onclick="clearLog()">Clear Log</button>
   <button id="historyButton" class="admin-button" onclick="downloadStudentHistory()">Student History</button>
+  <button id="fullscreenToggle" class="admin-button" onclick="toggleFullscreen()">Enter Fullscreen</button>
   <button id="exitAdminButton" class="admin-button" onclick="exitAdmin()">Exit Admin Mode</button>
 
   <script>
-    const adminIDs = ["159357", "123456", "246810"];  // Multiple admin codes
-
+    const adminIDs = ["159357", "123456", "246810"];
     let checkedOutID = localStorage.getItem('checkedOutID') || "";
     let checkOutTimestamp = localStorage.getItem('checkOutTimestamp');
     let log = JSON.parse(localStorage.getItem('log') || "[]");
     let timerInterval = null;
     let adminMode = false;
+    let isFullscreen = false;
 
     function isValidID(id) {
       return /^\d{6}$/.test(id);
@@ -252,6 +283,7 @@
       document.getElementById('clearLogButton').style.display = "block";
       document.getElementById('historyButton').style.display = "block";
       document.getElementById('exitAdminButton').style.display = "block";
+      document.getElementById('fullscreenToggle').style.display = "block";
     }
 
     function exitAdmin() {
@@ -260,11 +292,30 @@
       document.getElementById('clearLogButton').style.display = "none";
       document.getElementById('historyButton').style.display = "none";
       document.getElementById('exitAdminButton').style.display = "none";
+      document.getElementById('fullscreenToggle').style.display = "none";
       showMessage("Admin mode deactivated.");
       fadeOutMessage();
     }
 
-    // Optional: Warn if user tries to close tab with student still checked out
+    function toggleFullscreen() {
+      const el = document.documentElement;
+      const btn = document.getElementById('fullscreenToggle');
+
+      if (!isFullscreen) {
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if (el.msRequestFullscreen) el.msRequestFullscreen();
+        btn.textContent = "Exit Fullscreen";
+        isFullscreen = true;
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        else if (document.msExitFullscreen) document.msExitFullscreen();
+        btn.textContent = "Enter Fullscreen";
+        isFullscreen = false;
+      }
+    }
+
     window.addEventListener('beforeunload', function (e) {
       if (checkedOutID) {
         e.preventDefault();
@@ -272,7 +323,6 @@
       }
     });
 
-    // Initial UI setup
     updateUI();
   </script>
 </body>
