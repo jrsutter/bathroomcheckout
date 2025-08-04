@@ -84,6 +84,8 @@
     let log = JSON.parse(localStorage.getItem('log') || "[]");
     let timerInterval = null;
     let adminMode = false;
+    const adminIDs = ["159357", "246810", "123456"]; // Add all admin codes here
+
 
     function isValidID(id) {
       return /^\d{6}$/.test(id);
@@ -136,7 +138,7 @@
         return;
       }
 
-      if (id === "159357" && !adminMode) {
+      if (adminIDs.includes(id) && !adminMode) {
         enableAdminMode();
         showMessage("Admin mode activated.");
         return;
@@ -267,3 +269,4 @@
   </script>
 </body>
 </html>
+
