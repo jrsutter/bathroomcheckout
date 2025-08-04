@@ -60,10 +60,10 @@
 
   <h2>Student Checkout</h2>
   
-<div style="text-align: left; display: inline-block;">
-  <label for="studentIdInput" style="font-size: 1.2rem;">Student ID:</label><br>
-  <input type="text" id="studentIdInput" placeholder="Enter Student ID" maxlength="6">
-</div>
+  <div style="text-align: left; display: inline-block;">
+    <label for="studentIdInput" style="font-size: 1.2rem;">Student ID:</label><br>
+    <input type="text" id="studentIdInput" placeholder="Enter Student ID" maxlength="6">
+  </div>
   
   <div>
     <button onclick="checkOut()">Check Out</button>
@@ -79,13 +79,13 @@
   <button id="exitAdminButton" class="admin-button" onclick="exitAdmin()">Exit Admin Mode</button>
 
   <script>
+    const adminIDs = ["159357", "123456", "246810"];  // Multiple admin codes
+
     let checkedOutID = localStorage.getItem('checkedOutID') || "";
     let checkOutTimestamp = localStorage.getItem('checkOutTimestamp');
     let log = JSON.parse(localStorage.getItem('log') || "[]");
     let timerInterval = null;
     let adminMode = false;
-    const adminIDs = ["159357", "246810", "123456"]; // Add all admin codes here
-
 
     function isValidID(id) {
       return /^\d{6}$/.test(id);
@@ -94,7 +94,7 @@
     function showMessage(msg) {
       const status = document.getElementById('status');
       status.textContent = msg;
-      status.style.opacity = 1; // Reset fade
+      status.style.opacity = 1;
     }
 
     function fadeOutMessage(delay = 10000) {
@@ -110,12 +110,12 @@
       clearInterval(timerInterval);
 
       if (checkedOutID) {
-        body.style.backgroundColor = '#B22222'; // darker red
+        body.style.backgroundColor = '#B22222';
         status.textContent = `Student ${checkedOutID} is checked out.`;
         updateTimer();
         timerInterval = setInterval(updateTimer, 1000);
       } else {
-        body.style.backgroundColor = '#228B22'; // darker green
+        body.style.backgroundColor = '#228B22';
         status.textContent = "No student is currently checked out.";
         timer.textContent = "";
       }
@@ -261,12 +261,19 @@
       document.getElementById('historyButton').style.display = "none";
       document.getElementById('exitAdminButton').style.display = "none";
       showMessage("Admin mode deactivated.");
-      fadeOutMessage(); // fade out after 10s
+      fadeOutMessage();
     }
+
+    // Optional: Warn if user tries to close tab with student still checked out
+    window.addEventListener('beforeunload', function (e) {
+      if (checkedOutID) {
+        e.preventDefault();
+        e.returnValue = 'A student is still checked out. Are you sure you want to leave?';
+      }
+    });
 
     // Initial UI setup
     updateUI();
   </script>
 </body>
 </html>
-
